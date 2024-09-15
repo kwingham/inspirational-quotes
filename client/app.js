@@ -8,7 +8,7 @@ let sortOrder = "Newest First"; // Default sort order
 
 // Fetch and display quotes
 async function fetchQuotes() {
-  let url = "";
+  let url = "https://inspirational-quotes-server.onrender.com/quotes";
   if (currentAuthorFilter !== "All Authors") {
     url += `?author=${encodeURIComponent(currentAuthorFilter)}`;
   }
@@ -41,11 +41,14 @@ form.addEventListener("submit", async (e) => {
   const quote = document.getElementById("quote").value;
   const author = document.getElementById("author").value;
 
-  const response = await fetch("https://your-backend-api.onrender.com/quotes", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ quote, author }),
-  });
+  const response = await fetch(
+    "https://inspirational-quotes-server.onrender.com/quotes",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quote, author }),
+    }
+  );
 
   if (response.ok) {
     form.reset(); // Clear form after submission
@@ -68,7 +71,9 @@ authorFilter.addEventListener("change", () => {
 
 // Fetch authors for filtering
 async function fetchAuthors() {
-  const response = await fetch("https://your-backend-api.onrender.com/authors");
+  const response = await fetch(
+    "https://inspirational-quotes-server.onrender.com/authors"
+  );
   const authors = await response.json();
 
   authorFilter.innerHTML = `<option value="All Authors">All Authors</option>`;
