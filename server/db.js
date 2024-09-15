@@ -5,7 +5,8 @@ dotenv.config(); // Load environment variables
 
 // Create a pool of PostgreSQL connections
 const pool = new Pool({
-  connectionString: process.env.SUPABASE_CONNECTION_URL, // Use the environment variable for connection string
+  connectionString: process.env.SUPABASE_CONNECTION_URL,
+  connectionTimeoutMillis: 5000,
 });
 
 // Test the connection
