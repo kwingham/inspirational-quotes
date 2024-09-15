@@ -27,9 +27,10 @@ async function fetchQuotes() {
   quotes.forEach((quote) => {
     const li = document.createElement("li");
     li.innerHTML = `
-      <blockquote>"${quote.quote}" - ${quote.author}</blockquote>
-      <p>Date posted: ${new Date(quote.created_at).toLocaleDateString()}</p>
-    `;
+  <blockquote>"${quote.quote_text}" - ${quote.author_name}</blockquote>
+  <p>Date posted: ${new Date(quote.created_at).toLocaleDateString()}</p>
+`;
+
     quoteList.appendChild(li);
   });
 }
