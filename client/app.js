@@ -4,11 +4,11 @@ const authorFilter = document.getElementById("author-filter");
 const sortOrderButton = document.getElementById("sort-order");
 
 let currentAuthorFilter = "All Authors";
-let sortOrder = "Newest First"; // Default quote display
+let sortOrder = "Newest First"; // Default sort order
 
 // Fetch and display quotes
 async function fetchQuotes() {
-  let url = "http://localhost:5000/quotes";
+  let url = "";
   if (currentAuthorFilter !== "All Authors") {
     url += `?author=${encodeURIComponent(currentAuthorFilter)}`;
   }
@@ -27,8 +27,8 @@ async function fetchQuotes() {
   quotes.forEach((quote) => {
     const li = document.createElement("li");
     li.innerHTML = `
-        <blockquote>"${quote.quote}" - ${quote.author}</blockquote>
-        <p>Date posted: ${new Date(quote.created_at).toLocaleDateString()}</p>
+      <blockquote>"${quote.quote}" - ${quote.author}</blockquote>
+      <p>Date posted: ${new Date(quote.created_at).toLocaleDateString()}</p>
     `;
     quoteList.appendChild(li);
   });
@@ -39,12 +39,12 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const quote = document.getElementById("quote").value;
-  const author = dovument.getElementById("author").value;
+  const author = document.getElementById("author").value;
 
-  const response = await fetch("http://localhost:5000/quotes", {
+  const response = await fetch("https://your-backend-api.onrender.com/quotes", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ quote, author })
+    body: JSON.stringify({ quote, author }),
   });
 
   if (response.ok) {
@@ -53,26 +53,26 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-// Sorting by date
+// Handle sorting by date
 sortOrderButton.addEventListener("click", () => {
-    sortOrder = sortOrder === "Newest First" ? "Oldest First" : "Newest First";
-    sortOrderButton.textContent = `Sort by Date: ${sortOrder}`;
-    fetchQuotes();
+  sortOrder = sortOrder === "Newest First" ? "Oldest First" : "Newest First";
+  sortOrderButton.textContent = `Sort by Date: ${sortOrder}`;
+  fetchQuotes();
 });
 
-// Author filtering
+// Handle author filtering
 authorFilter.addEventListener("change", () => {
-    currentAuthorFilter = authorFilter.value;
-    fetchQuotes();
+  currentAuthorFilter = authorFilter.value;
+  fetchQuotes();
 });
 
-// Filter by author
-async function  fetchAuthors() {
-    const response = await fetch(http:localhost:5000/authors);
-    const authors = await response.json();
+// Fetch authors for filtering
+async function fetchAuthors() {
+  const response = await fetch("https://your-backend-api.onrender.com/authors");
+  const authors = await response.json();
 
-  authorFilter.innerHTML =  `<option value="All Authors">All Authors</option>`;
-  authors.forEach(author => {
+  authorFilter.innerHTML = `<option value="All Authors">All Authors</option>`;
+  authors.forEach((author) => {
     const option = document.createElement("option");
     option.value = author;
     option.textContent = author;
@@ -82,4 +82,4 @@ async function  fetchAuthors() {
 
 // Fetch quotes and authors on page load
 fetchAuthors();
-fetchQuotes
+fetchQuotes();
