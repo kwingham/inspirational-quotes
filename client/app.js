@@ -27,27 +27,26 @@ async function fetchQuotes() {
   quotes.forEach((quote) => {
     const li = document.createElement("li");
     li.innerHTML = `
-  <blockquote>"${quote.quote_text}" - ${quote.author_name}</blockquote>
-  <p>Date posted: ${new Date(quote.created_at).toLocaleDateString()}</p>
-`;
-
+      <blockquote>"${quote.quote_text}" - ${quote.author_name}</blockquote>
+      <p>Date posted: ${new Date(quote.created_at).toLocaleDateString()}</p>
+    `;
     quoteList.appendChild(li);
   });
 }
 
-// sUBMIT FORM
+// SUBMIT FORM to post new quote
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const quote = document.getElementById("quote_text").value;
-  const author = document.getElementById("author_name").value;
+  const quote_text = document.getElementById("quote").value; // Match correct field name
+  const author_name = document.getElementById("author").value; // Match correct field name
 
   const response = await fetch(
     "https://inspirational-quotes-server.onrender.com/quotes",
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ quote_text, author_name }),
+      body: JSON.stringify({ quote_text, author_name }), // Send correct field names
     }
   );
 

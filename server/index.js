@@ -1,22 +1,17 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const { Pool } = require("pg"); // Import pg for PostgreSQL connection
+const db = require("./db"); // Import the db.js file
 
-dotenv.config(); // Environment variables
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
-app.use(express.json()); // Enable JSON body parsing
+app.use(express.json());
 
-// Set up PostgreSQL connection using Pool
-const pool = new Pool({
-  connectionString: process.env.SUPABASE_CONNECTION_URL, // Supabase connection URL from .env file
-});
-
-// Route to test server
+// Route to check if the server is running
 app.get("/", (req, res) => {
   res.send("Inspirational Quotes API is running");
 });
@@ -24,7 +19,7 @@ app.get("/", (req, res) => {
 // Route to test database connection
 app.get("/test-db", async (req, res) => {
   try {
-    const result = await pool.query("SELECT NOW()");
+    const result = await db.query("SELECT NOW()");
     res.json({
       message: "Database connected successfully",
       time: result.rows[0],
@@ -35,45 +30,55 @@ app.get("/test-db", async (req, res) => {
   }
 });
 
-// Get route for quote retrieval
+// Route to fetch all quotes
 app.get("/quotes", async (req, res) => {
   try {
-    const result = await pool.query(
+    const result = await db.query(
       "SELECT * FROM quotes ORDER BY created_at DESC"
     );
-    res.json(result.rows); // Send back the quotes from the DB
+    res.json(result.rows);
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Server Error");
   }
 });
 
-// POST route to add a new quote
+// Route to post a new quote
 app.post("/quotes", async (req, res) => {
   const { quote_text, author_name } = req.body;
 
-  // Check if both fields are provided
+  // Validate request body
   if (!quote_text || !author_name) {
     return res
       .status(400)
-      .json({ msg: "Please provide both quote and author name." });
+      .json({ msg: "Please provide both quote text and author name." });
   }
 
   try {
-    // Insert the new quote into the database
-    const newQuote = await pool.query(
+    const newQuote = await db.query(
       "INSERT INTO quotes (quote_text, author_name) VALUES ($1, $2) RETURNING *",
       [quote_text, author_name]
     );
-
-    res.json(newQuote.rows[0]); // Send the newly added quote back to the client
+    res.json(newQuote.rows[0]);
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Server Error");
   }
 });
 
-// Listen on the defined port
+// Route to fetch all distinct authors
+app.get("/authors", async (req, res) => {
+  try {
+    const result = await db.query("SELECT DISTINCT author_name FROM quotes");
+    const authors = result.rows.map((row) => row.author_name); // Extract author names
+    res.json(authors); // Send the list of authors as JSON
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// Start the server and listen on the defined port
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
