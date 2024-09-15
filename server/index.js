@@ -44,6 +44,7 @@ app.get("/quotes", async (req, res) => {
     res.json(result.rows); // Send back the quotes from the DB
   } catch (error) {
     console.error(error.message);
+    res.status(500).send("Server Error");
   }
 });
 

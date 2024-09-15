@@ -39,15 +39,15 @@ async function fetchQuotes() {
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const quote = document.getElementById("quote").value;
-  const author = document.getElementById("author").value;
+  const quote = document.getElementById("quote_text").value;
+  const author = document.getElementById("author_name").value;
 
   const response = await fetch(
     "https://inspirational-quotes-server.onrender.com/quotes",
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ quote, author }),
+      body: JSON.stringify({ quote_text, author_name }),
     }
   );
 
