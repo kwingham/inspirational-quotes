@@ -4,87 +4,88 @@ const authorFilter = document.getElementById("author-filter");
 const sortOrderButton = document.getElementById("sort-order");
 
 let currentAuthorFilter = "All Authors";
-let sortOrder = "Newest First"; // Default sort order
+let sortOrder = "Newest First";
 
-// Fetch and display quotes
-async function fetchQuotes() {
-  let url = "https://inspirational-quotes-server.onrender.com/quotes";
-  if (currentAuthorFilter !== "All Authors") {
-    url += `?author=${encodeURIComponent(currentAuthorFilter)}`;
-  }
-
-  const response = await fetch(url);
-  const quotes = await response.json();
-
-  // Sort quotes by date
-  if (sortOrder === "Newest First") {
-    quotes.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  } else {
-    quotes.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-  }
-
-  quoteList.innerHTML = "";
-  quotes.forEach((quote) => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <blockquote>"${quote.quote_text}" - ${quote.author_name}</blockquote>
-      <p>Date posted: ${new Date(quote.created_at).toLocaleDateString()}</p>
-    `;
-    quoteList.appendChild(li);
+// Fetch API data (quotes or authors)
+const fetchData = async (url, method = "GET", body) => {
+  const response = await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : null,
   });
-}
+  return response.ok ? response.json() : [];
+};
 
-// SUBMIT FORM to post new quote
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+const renderQuotes = (quotes) => {
+  quoteList.innerHTML = quotes
+    .map(
+      (quote) =>
+        `<li><blockquote>"${quote.quote_text}" - ${
+          quote.author_name
+        }</blockquote><p>Date posted: ${new Date(
+          quote.created_at
+        ).toLocaleDateString()}</p></li>`
+    )
+    .join("");
+};
 
-  const quote_text = document.getElementById("quote").value; // Match correct field name
-  const author_name = document.getElementById("author").value; // Match correct field name
-
-  const response = await fetch(
-    "https://inspirational-quotes-server.onrender.com/quotes",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ quote_text, author_name }), // Send correct field names
-    }
+const fetchAndDisplayQuotes = async () => {
+  const query =
+    currentAuthorFilter !== "All Authors"
+      ? `?author=${encodeURIComponent(currentAuthorFilter)}`
+      : "";
+  let quotes = await fetchData(
+    `https://inspirational-quotes-server.onrender.com/quotes${query}`
   );
 
-  if (response.ok) {
-    form.reset(); // Clear form after submission
-    fetchQuotes(); // Refresh the list of quotes
-  }
+  quotes = quotes.sort((a, b) =>
+    sortOrder === "Newest First"
+      ? new Date(b.created_at) - new Date(a.created_at)
+      : new Date(a.created_at) - new Date(b.created_at)
+  );
+  renderQuotes(quotes);
+};
+
+// Submit new quote
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const quote_text = document.getElementById("quote").value;
+  const author_name = document.getElementById("author").value;
+
+  await fetchData(
+    "https://inspirational-quotes-server.onrender.com/quotes",
+    "POST",
+    { quote_text, author_name }
+  );
+  form.reset();
+  fetchAndDisplayQuotes();
 });
 
-// Handle sorting by date
+// Toggle sort order and refresh quotes
 sortOrderButton.addEventListener("click", () => {
   sortOrder = sortOrder === "Newest First" ? "Oldest First" : "Newest First";
   sortOrderButton.textContent = `Sort by Date: ${sortOrder}`;
-  fetchQuotes();
+  fetchAndDisplayQuotes();
 });
 
-// Handle author filtering
+// Filter by author
 authorFilter.addEventListener("change", () => {
   currentAuthorFilter = authorFilter.value;
-  fetchQuotes();
+  fetchAndDisplayQuotes();
 });
 
 // Fetch authors for filtering
-async function fetchAuthors() {
-  const response = await fetch(
+const fetchAuthors = async () => {
+  const authors = await fetchData(
     "https://inspirational-quotes-server.onrender.com/authors"
   );
-  const authors = await response.json();
+  authorFilter.innerHTML =
+    `<option value="All Authors">All Authors</option>` +
+    authors
+      .map((author) => `<option value="${author}">${author}</option>`)
+      .join("");
+};
 
-  authorFilter.innerHTML = `<option value="All Authors">All Authors</option>`;
-  authors.forEach((author) => {
-    const option = document.createElement("option");
-    option.value = author;
-    option.textContent = author;
-    authorFilter.appendChild(option);
-  });
-}
-
-// Fetch quotes and authors on page load
+// Initial data load
 fetchAuthors();
-fetchQuotes();
+fetchAndDisplayQuotes();
