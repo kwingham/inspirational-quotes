@@ -30,19 +30,14 @@ const renderQuotes = (quotes) => {
 };
 
 const fetchAndDisplayQuotes = async () => {
-  const queryParams = [];
-
-  // Add author filter to query params if set
-  if (currentAuthorFilter !== "All Authors") {
-    queryParams.push(`author_name=${encodeURIComponent(currentAuthorFilter)}`);
-  }
-
-  const queryString = queryParams.length ? `?${queryParams.join("&")}` : "";
+  const query =
+    currentAuthorFilter !== "All Authors"
+      ? `?author=${encodeURIComponent(currentAuthorFilter)}`
+      : "";
   let quotes = await fetchData(
-    `https://inspirational-quotes-server.onrender.com/quotes${queryString}`
+    `https://inspirational-quotes-server.onrender.com/quotes${query}`
   );
 
-  // Sort quotes by date (newest or oldest first)
   quotes = quotes.sort((a, b) =>
     sortOrder === "Newest First"
       ? new Date(b.created_at) - new Date(a.created_at)

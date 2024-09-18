@@ -30,25 +30,12 @@ app.get(
   })
 );
 
-// Updated /quotes route with author filtering
 app.get(
   "/quotes",
   handleAsync(async (req, res) => {
-    const { author_name } = req.query; // Get the author name from query params
-
-    let queryText = "SELECT * FROM quotes";
-    const queryParams = [];
-
-    // If an author filter is provided, add a WHERE clause
-    if (author_name) {
-      queryText += " WHERE author_name = $1";
-      queryParams.push(author_name);
-    }
-
-    // Always order by the created_at field in descending order
-    queryText += " ORDER BY created_at DESC";
-
-    const result = await db.query(queryText, queryParams);
+    const result = await db.query(
+      "SELECT * FROM quotes ORDER BY created_at DESC"
+    );
     res.json(result.rows);
   })
 );
