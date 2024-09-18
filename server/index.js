@@ -34,21 +34,10 @@ app.get(
   "/quotes",
   asyncHandler(async (req, res) => {
     const { author_name } = req.query;
-
-    let query;
-    if (author_name && author_name !== "All Authors") {
-      // Fetch quotes for a specific author
-      query = {
-        text: "SELECT * FROM quotes WHERE author_name ILIKE $1 ORDER BY created_at DESC",
-        values: [author_name],
-      };
-    } else {
-      // Fetch all quotes
-      query = {
-        text: "SELECT * FROM quotes ORDER BY created_at DESC",
-      };
-    }
-
+    const query = {
+      text: "SELECT * FROM quotes WHERE ($1 IS NULL OR author_name = $1) ORDER BY created_at DESC",
+      values: [author_name || null],
+    };
     const result = await db.query(query);
     res.json(result.rows);
   })
