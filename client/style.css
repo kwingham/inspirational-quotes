@@ -1,54 +1,109 @@
 body {
-  font-family: Arial, sans-serif;
-  background-color: #333;
-  color: white;
   margin: 0;
-  padding: 20px;
+  padding: 0;
+  font-family: "Sergoe UI", sans-serif;
+  background-color: #242424;
+  color: white;
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: flex-start; /* Align content starting from the top */
+  min-height: 100vh;
 }
 
-h1,
-h2 {
-  color: #f0f0f0;
-}
-
-#quote-form {
+h1 {
+  font-size: 32px;
+  text-align: left;
   margin-bottom: 20px;
 }
 
-#quote-form input {
+.container {
+  max-width: 88%;
+  width: 90%;
   padding: 10px;
-  margin-right: 10px;
-  border-radius: 5px;
+  text-align: center;
+  margin-top: 20px; /* Adjust this to control how close to the top you want */
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+textarea,
+input {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px;
+  font-size: 16px;
   border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
 button {
-  padding: 10px 15px;
-  background-color: #007bff;
+  padding: 10px 20px;
+  font-size: 16px;
   color: white;
+  background-color: #646cff;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
-
 button:hover {
-  background-color: #0056b3;
+  background-color: #535bf2;
 }
 
-#author-dropdown {
-  padding: 10px;
+.filter-sort {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 15px;
   margin-bottom: 20px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
 }
 
-#quotes-container {
-  margin-top: 20px;
+select,
+button {
+  width: 100%;
+  max-width: 200px;
 }
 
-#quotes-container div {
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  background-color: #333;
+  padding: 15px;
   margin-bottom: 10px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  background-color: #444;
+  border-radius: 5px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    width: 90%;
+    margin-top: 10px; /* Adjust top margin for smaller screens */
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  form,
+  .filter-sort {
+    flex-direction: column;
+  }
+
+  textarea,
+  input,
+  button,
+  select {
+    width: 100%;
+  }
+
+  button {
+    font-size: 14px;
+  }
 }
