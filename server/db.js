@@ -1,20 +1,18 @@
-const { Pool } = require("pg");
-const dotenv = require("dotenv");
+require("dotenv").config(); // Load .env file
 
-dotenv.config();
+const { createClient } = require("@supabase/supabase-js");
 
-const pool = new Pool({
-  connectionString: process.env.SUPABASE_CONNECTION_URL,
-});
+// Access environment variables from the .env file
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
-pool.query("SELECT NOW()", (err, res) => {
-  if (err) {
-    console.error("Database connection error", err.stack);
-  } else {
-    console.log("Database connected", res.rows[0]);
-  }
-});
+// Check if the environment variables are loaded properly
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  console.error("Error: Supabase URL and Key must be set in the .env file");
+  process.exit(1);
+}
 
-module.exports = {
-  query: (text, params) => pool.query(text, params),
-};
+// Create the Supabase client using the credentials from .env
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+module.exports = { supabase };
