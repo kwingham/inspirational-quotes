@@ -1,56 +1,70 @@
 const express = require("express");
-const { supabase } = require("./db"); // Importing Supabase client from db.js
-const app = express();
+const cors = require("cors");
+const dotenv = require("dotenv");
+const db = require("./db");
 
+dotenv.config();
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+app.use(cors());
 app.use(express.json());
 
-// Route to fetch all unique authors
-app.get("/authors", async (req, res) => {
-  try {
-    // Fetch distinct authors from the quotes table
-    const { data, error } = await supabase
-      .from("quotes")
-      .select("author", { distinct: true }); // Fetch only distinct author names
+// Generic handler to reduce code duplication
+const handleAsync = (fn) => (req, res) =>
+  fn(req, res).catch((error) => {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  });
 
-    if (error) {
-      console.error("Error fetching authors:", error);
-      return res.status(500).json({ error: "Error fetching authors" });
+app.get("/", (req, res) => res.send("Inspirational Quotes API is running"));
+
+app.get(
+  "/test-db",
+  handleAsync(async (req, res) => {
+    const result = await db.query("SELECT NOW()");
+    res.json({
+      message: "Database connected successfully",
+      time: result.rows[0],
+    });
+  })
+);
+
+app.get(
+  "/quotes",
+  handleAsync(async (req, res) => {
+    const result = await db.query(
+      "SELECT * FROM quotes ORDER BY created_at DESC"
+    );
+    res.json(result.rows);
+  })
+);
+
+app.post(
+  "/quotes",
+  handleAsync(async (req, res) => {
+    const { quote_text, author_name } = req.body;
+    if (!quote_text || !author_name) {
+      return res
+        .status(400)
+        .json({ msg: "Provide both quote text and author name." });
     }
+    const newQuote = await db.query(
+      "INSERT INTO quotes (quote_text, author_name) VALUES ($1, $2) RETURNING *",
+      [quote_text, author_name]
+    );
+    res.json(newQuote.rows[0]);
+  })
+);
 
-    // Return the list of authors
-    res.status(200).json(data);
-  } catch (err) {
-    console.error("Server error:", err);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+app.get(
+  "/authors",
+  handleAsync(async (req, res) => {
+    const result = await db.query("SELECT DISTINCT author_name FROM quotes");
+    res.json(result.rows.map((row) => row.author_name));
+  })
+);
 
-// Route to fetch quotes by author
-app.get("/quotes", async (req, res) => {
-  const { author_name } = req.query;
-
-  try {
-    // Fetch quotes by the given author name
-    const { data, error } = await supabase
-      .from("quotes")
-      .select("*")
-      .eq("author", author_name);
-
-    if (error) {
-      console.error("Error fetching quotes:", error);
-      return res.status(500).json({ error: "Error fetching quotes" });
-    }
-
-    // Return the list of filtered quotes
-    res.status(200).json(data);
-  } catch (err) {
-    console.error("Server error:", err);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-// Start the server on the specified port
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT, () =>
+  console.log(`Server running on http://localhost:${PORT}`)
+);
