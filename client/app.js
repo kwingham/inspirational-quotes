@@ -6,37 +6,17 @@ const sortOrderButton = document.getElementById("sort-order");
 let currentAuthorFilter = "All Authors";
 let sortOrder = "Newest First";
 
-// Utility function for showing a loading state
-const showLoading = () => {
-  quoteList.innerHTML = "<li>Loading quotes...</li>";
-};
-
-// Utility function for error handling
-const showError = (message) => {
-  quoteList.innerHTML = `<li>Error: ${message}</li>`;
-};
-
 // Fetch API data (quotes or authors)
 const fetchData = async (url, method = "GET", body) => {
-  try {
-    const response = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: body ? JSON.stringify(body) : null,
-    });
-    return response.ok ? response.json() : Promise.reject("Failed to fetch");
-  } catch (error) {
-    showError(error);
-  }
+  const response = await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : null,
+  });
+  return response.ok ? response.json() : [];
 };
 
-// Render quotes on the UI
 const renderQuotes = (quotes) => {
-  if (quotes.length === 0) {
-    quoteList.innerHTML = "<li>No quotes found</li>";
-    return;
-  }
-
   quoteList.innerHTML = quotes
     .map(
       (quote) =>
@@ -49,32 +29,26 @@ const renderQuotes = (quotes) => {
     .join("");
 };
 
-// Fetch and display quotes with author filter and sorting
 const fetchAndDisplayQuotes = async () => {
-  showLoading(); // Show loading state while fetching
+  const queryParams = [];
 
-  const params = new URLSearchParams();
-
+  // Add author filter to query params if set
   if (currentAuthorFilter !== "All Authors") {
-    params.append("author_name", currentAuthorFilter); // Add author filter if needed
+    queryParams.push(`author_name=${encodeURIComponent(currentAuthorFilter)}`);
   }
 
-  try {
-    let quotes = await fetchData(
-      `https://inspirational-quotes-server.onrender.com/quotes?${params}`
-    );
+  const queryString = queryParams.length ? `?${queryParams.join("&")}` : "";
+  let quotes = await fetchData(
+    `https://inspirational-quotes-server.onrender.com/quotes${queryString}`
+  );
 
-    // Sort quotes by date (newest or oldest first)
-    quotes = quotes.sort((a, b) =>
-      sortOrder === "Newest First"
-        ? new Date(b.created_at) - new Date(a.created_at)
-        : new Date(a.created_at) - new Date(b.created_at)
-    );
-
-    renderQuotes(quotes); // Render the quotes
-  } catch (error) {
-    showError("Failed to load quotes.");
-  }
+  // Sort quotes by date (newest or oldest first)
+  quotes = quotes.sort((a, b) =>
+    sortOrder === "Newest First"
+      ? new Date(b.created_at) - new Date(a.created_at)
+      : new Date(a.created_at) - new Date(b.created_at)
+  );
+  renderQuotes(quotes);
 };
 
 // Submit new quote
@@ -83,30 +57,26 @@ form.addEventListener("submit", async (e) => {
   const quote_text = document.getElementById("quote").value;
   const author_name = document.getElementById("author").value;
 
-  try {
-    await fetchData(
-      "https://inspirational-quotes-server.onrender.com/quotes",
-      "POST",
-      { quote_text, author_name }
-    );
-    form.reset(); // Clear form after successful submission
-    fetchAndDisplayQuotes(); // Refresh quotes after submission
-  } catch (error) {
-    showError("Failed to post the quote.");
-  }
+  await fetchData(
+    "https://inspirational-quotes-server.onrender.com/quotes",
+    "POST",
+    { quote_text, author_name }
+  );
+  form.reset();
+  fetchAndDisplayQuotes();
 });
 
 // Toggle sort order and refresh quotes
 sortOrderButton.addEventListener("click", () => {
   sortOrder = sortOrder === "Newest First" ? "Oldest First" : "Newest First";
   sortOrderButton.textContent = `Sort by Date: ${sortOrder}`;
-  fetchAndDisplayQuotes(); // Refetch quotes with new sort order
+  fetchAndDisplayQuotes();
 });
 
 // Filter by author
 authorFilter.addEventListener("change", () => {
-  currentAuthorFilter = authorFilter.value; // Capture the selected author
-  fetchAndDisplayQuotes(); // Fetch and display filtered quotes
+  currentAuthorFilter = authorFilter.value;
+  fetchAndDisplayQuotes();
 });
 
 // Fetch authors for filtering
