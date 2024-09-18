@@ -10,18 +10,17 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Generic handler to reduce code duplication
-const handleAsync = (fn) => (req, res) =>
-  fn(req, res).catch((error) => {
-    console.error(error.message);
-    res.status(500).send("Server Error");
-  });
+// Middleware for async error handling
+const asyncHandler = (fn) => (req, res, next) =>
+  Promise.resolve(fn(req, res, next)).catch(next);
 
+// Root route
 app.get("/", (req, res) => res.send("Inspirational Quotes API is running"));
 
+// Database test route
 app.get(
   "/test-db",
-  handleAsync(async (req, res) => {
+  asyncHandler(async (req, res) => {
     const result = await db.query("SELECT NOW()");
     res.json({
       message: "Database connected successfully",
@@ -30,19 +29,35 @@ app.get(
   })
 );
 
+// Fetch quotes, optional filtering by author
 app.get(
   "/quotes",
-  handleAsync(async (req, res) => {
-    const result = await db.query(
-      "SELECT * FROM quotes ORDER BY created_at DESC"
-    );
+  asyncHandler(async (req, res) => {
+    const { author_name } = req.query;
+
+    let query;
+    if (author_name && author_name !== "All Authors") {
+      // Fetch quotes for a specific author
+      query = {
+        text: "SELECT * FROM quotes WHERE author_name ILIKE $1 ORDER BY created_at DESC",
+        values: [author_name],
+      };
+    } else {
+      // Fetch all quotes
+      query = {
+        text: "SELECT * FROM quotes ORDER BY created_at DESC",
+      };
+    }
+
+    const result = await db.query(query);
     res.json(result.rows);
   })
 );
 
+// Add a new quote
 app.post(
   "/quotes",
-  handleAsync(async (req, res) => {
+  asyncHandler(async (req, res) => {
     const { quote_text, author_name } = req.body;
     if (!quote_text || !author_name) {
       return res
@@ -57,14 +72,15 @@ app.post(
   })
 );
 
+// Fetch all unique authors
 app.get(
   "/authors",
-  handleAsync(async (req, res) => {
-    const result = await db.query("SELECT DISTINCT author_name FROM quotes");
+  asyncHandler(async (req, res) => {
+    const result = await db.query(
+      "SELECT DISTINCT author_name FROM quotes ORDER BY author_name"
+    );
     res.json(result.rows.map((row) => row.author_name));
   })
 );
 
-app.listen(PORT, () =>
-  console.log(`Server running on http://localhost:${PORT}`)
-);
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
