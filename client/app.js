@@ -6,7 +6,7 @@ const sortOrderButton = document.getElementById("sort-order");
 let currentAuthorFilter = "All Authors";
 let sortOrder = "Newest First";
 
-// Fetch API data (quotes or authors)
+// Fetch API data
 const fetchData = async (url, method = "GET", body) => {
   const response = await fetch(url, {
     method,
@@ -49,8 +49,9 @@ const fetchAndDisplayQuotes = async () => {
 // Submit new quote
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const quote_text = document.getElementById("quote").value;
-  const author_name = document.getElementById("author").value;
+
+  const quote_text = document.getElementById("quote-text").value;
+  const author_name = document.getElementById("quote-author").value;
 
   await fetchData(
     "https://inspirational-quotes-server.onrender.com/quotes",
