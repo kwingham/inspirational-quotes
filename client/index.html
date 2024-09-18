@@ -15,21 +15,27 @@
 
       <!-- Form to post a new quote -->
       <form id="quote-form">
-        <textarea id="quote" placeholder="Enter quote" required></textarea>
+        <label for="quote-text">Enter your quote:</label>
+        <input type="text" id="quote-text" placeholder="Enter quote" required />
+
+        <label for="quote-author">Enter the author name:</label>
         <input
           type="text"
-          id="author"
+          id="quote-author"
           placeholder="Enter author name"
           required
         />
+
         <button type="submit">Post Quote</button>
       </form>
 
       <!-- Filter and sorting buttons -->
       <div class="filter-sort">
+        <label for="author-filter">Filter by Author:</label>
         <select id="author-filter">
-          <option value="All Authors">Filter by Author</option>
+          <option value="All Authors">All Authors</option>
         </select>
+
         <button id="sort-order">Sort by Time Posted</button>
       </div>
 
