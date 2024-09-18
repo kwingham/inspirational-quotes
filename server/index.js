@@ -10,7 +10,6 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Generic handler to reduce code duplication
 const handleAsync = (fn) => (req, res) =>
   fn(req, res).catch((error) => {
     console.error(error.message);
